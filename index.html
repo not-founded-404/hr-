@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR그룹 팀별 담당자 안내</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #f02d4e;
+            --bg-gray: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-dark: #111111;
+            --text-muted: #767676;
+            --border-color: #ebebeb;
+            --drawer-width: 480px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        /* 헤더 영역 */
+        .app-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 30px 40px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .title-area h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .title-area span {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-left: 10px;
+            font-weight: 400;
+        }
+
+        .search-box {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 14px;
+            background-color: var(--bg-gray);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            background-color: #fff;
+            border-color: var(--text-dark);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* 필터 탭 */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        .tab-btn {
+            border: none;
+            background: #f0f0f0;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--text-dark);
+            color: #ffffff;
+        }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .team-section {
+            margin-bottom: 50px;
+        }
+
+        .team-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--primary-red);
+            border-radius: 2px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* 카드 스타일 */
+        .member-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #d1d1d1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .avatar-badge {
+            width: 44px;
+            height: 44px;
+            background-color: var(--primary-red);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .member-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .member-info span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .card-summary {
+            font-size: 13px;
+            color: #444;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 20px;
+            min-height: 40px;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-top: 1px solid #f6f6f6;
+            padding-top: 14px;
+        }
+
+        .member-card:hover .card-footer {
+            color: var(--primary-red);
+        }
+
+        /* 슬라이드 우측 드로어 */
+        .drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .drawer-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: var(--drawer-width);
+            max-width: 90vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 101;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .drawer.active {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 30px 30px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #888;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .close-btn:hover {
+            color: #111;
+        }
+
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-red);
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .profile-text .team-name {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .profile-text .member-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        /* 검은색 담당 업무 상자 */
+        .summary-box {
+            background-color: #121212;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 24px;
+            margin: 0 30px 30px;
+        }
+
+        .summary-box .label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-box .keywords {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.4;
+            word-break: keep-all;
+        }
+
+        /* 상세 담당 영역 리스트 */
+        .detail-section {
+            padding: 0 30px 40px;
+            flex: 1;
+        }
+
+        .detail-section h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f6f6f6;
+        }
+
+        .task-num {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--primary-red);
+            min-width: 20px;
+            padding-top: 2px;
+        }
+
+        .task-content .task-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .task-content .task-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 20px 20px 0;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 상단 헤더 -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="title-area">
+                <h1>HR그룹 팀별 담당자 안내 <span>2026. 07 기준</span></h1>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="담당자, 업무명, 키워드 검색...">
+            </div>
+        </div>
+
+        <!-- 팀 필터 탭 -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" data-team="all">전체</button>
+            <button class="tab-btn" data-team="Performance Lab">Performance Lab</button>
+            <button class="tab-btn" data-team="안전/보건Cell">안전/보건Cell</button>
+            <button class="tab-btn" data-team="People Unit">People Unit</button>
+            <button class="tab-btn" data-team="사내고객센터">사내고객센터</button>
+        </div>
+    </header>
+
+    <!-- 카드 목록 메인 콘텐츠 -->
+    <main class="main-content" id="contentContainer">
+        <!-- JS 동적 생성 -->
+    </main>
+
+    <!-- 슬라이드 오버 드로어 패널 -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="profile-area">
+                <div class="profile-avatar" id="drawerAvatar">--</div>
+                <div class="profile-text">
+                    <div class="team-name" id="drawerTeam">--</div>
+                    <div class="member-name" id="drawerName">--</div>
+                </div>
+            </div>
+            <button class="close-btn" id="closeDrawerBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- 담당 업무 요약 상자 -->
+        <div class="summary-box">
+            <div class="label">담당 업무</div>
+            <div class="keywords" id="drawerKeywords">--</div>
+        </div>
+
+        <!-- 상세 업무 영역 목록 -->
+        <div class="detail-section">
+            <h4>담당 영역</h4>
+            <ul class="task-list" id="drawerTaskList">
+                <!-- JS 동적 생성 -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 전체 HR 담당자 데이터
+        const hrData = [
+            {
+                team: "Performance Lab",
+                members: [
+                    {
+                        name: "강준모",
+                        summary: "성과관리/평가 · 조직",
+                        tasks: [
+                            { title: "성과관리/평가", desc: "연중 수시 성과관리(1on1 등)/육성, 연말 정기평가" },
+                            { title: "조직", desc: "조직 변경, 직책자 인사(이동/겸직/겸무 등)" }
+                        ]
+                    },
+                    {
+                        name: "한의진",
+                        summary: "기업문화 · HR Analytics/자동화",
+                        tasks: [
+                            { title: "기업문화", desc: "일하는 방식 개선/전파" },
+                            { title: "HR Analytics/자동화", desc: "HR Data 분석/자동화" }
+                        ]
+                    },
+                    {
+                        name: "박현아",
+                        summary: "정규직 채용 · 온보딩 · 리더십",
+                        tasks: [
+                            { title: "채용(정규직)", desc: "채용 기획, 정규직 채용 검토 및 운영" },
+                            { title: "온보딩", desc: "온보딩 프로세스 활성화/개선" },
+                            { title: "리더십", desc: "리더십 교육, Key Position 육성/관리" }
+                        ]
+                    },
+                    {
+                        name: "김은섭",
+                        summary: "비정규직 채용 · 인력 통계/대관업무",
+                        tasks: [
+                            { title: "채용(비정규직)", desc: "채용 기획, 비정규직 채용 검토 및 운영" },
+                            { title: "인력 통계/대관업무", desc: "대내외 인력 통계 요청 대응" }
+                        ]
+                    },
+                    {
+                        name: "이가연",
+                        summary: "교육 · 인사이동 · Career Store",
+                        tasks: [
+                            { title: "교육", desc: "IDP, 사내교육, 장애인식개선교육, 러닝월드 운영" },
+                            { title: "인사이동", desc: "구성원 이동/겸직/겸무 등, 조직 변경 시스템 작업, 가사번(19사번) 발급 및 종료" },
+                            { title: "Career Store", desc: "Career Store 요청 검토/운영" }
+                        ]
+                    }
+                ]
+            },
+            {
+                team: "안전/보건Cell",
+                members: [
+                    {
+                        name: "송태성",
+                        summary: "안전보건교육 · 산업재해 · 안전점검 및 개선",
+                        tasks: [
+                            { title: "안전보건교육", desc: "신규입사자 교육, 정기안전보건 교육" },
+                            { title: "산업재해", desc: "산업재해 대응, 산업재해율 확인서 발급" },
+                            { title: "안전점검 및 개선", desc: "순회점검, 냉장고 점검, 안전보건 의견청취 채널 운영" }
+                        ]
+                    },
+                    {
+                        name: "이정현",
+                        summary: "메디컬룸 · 건강검진 · 예방접종 · 건강증진 · 응급상황",
+                        tasks: [
+                            { title: "메디컬룸", desc: "상비약, 혈압·혈당·콜레스테롤 측정, 인바디, 응급처치, 폐의약품 수거" },
+                            { title: "건강검진", desc: "검진 대상, 검진 지원금, 검진 안내" },
+                            { title: "예방접종", desc: "독감 예방접종, 예방접종 일정" },
+                            { title: "건강증진 프로그램", desc: "건강교육, 심폐소생술 교육, 건강상담" },
+                            { title: "응급상황 대응", desc: "비상연락망 및 응급상황 지원" }
+                        ]
+                    },
+                    {
+                        name: "김찬수",
+                        summary: "사옥/시설관리 · 보안/공간운영 · 운영지원 · 사무환경",
+                        tasks: [
+                            { title: "사옥/시설관리", desc: "사옥 인테리어/공사, 시설 유지보수, 냉난방 관리" },
+                            { title: "보안/공간운영", desc: "CCTV, 출입관리, 구성원/협력사 좌석배치 및 이사지원" },
+                            { title: "운영지원", desc: "안내데스크, 미화, 주차, 통근버스 운영, 복지시설, 렌탈기기 관리" },
+                            { title: "사무환경", desc: "직인/명판 관리, 사무비품/소모품 관리" }
+                        ]
+                    }
+                ]
+            },
+            {
+                team: "People Unit",
+                members: [
+                    {
+                        name: "김나전",
+                        summary: "급여 · 4대보험 · 퇴직금",
+                        tasks: [
+                            { title: "급여", desc: "급여(정규직, 계약직), 연말정산, 급여압류, 급여계좌변경, 차량유지비신청" },
+                            { title: "4대보험", desc: "국민연금, 건강보험, 산재보험, 고용보험" },
+                            { title: "퇴직금", desc: "퇴직금, 퇴직연금 전환, 퇴직금 중도인출" }
+                        ]
+                    },
+                    {
+                        name: "염민영",
+                        summary: "4대보험 지원 · 휴직 지원 · 퇴직금",
+                        tasks: [
+                            { title: "4대보험 지원", desc: "건강보험 피부양자 등재, 이직확인서 제출" },
+                            { title: "휴직 지원", desc: "육아휴직, 출산전후신청서 제출 및 관리" },
+                            { title: "퇴직금", desc: "퇴직금, 퇴직연금 전환, 퇴직금 중도인출" }
+                        ]
+                    },
+                    {
+                        name: "강동현",
+                        summary: "근무시간 · 휴직 및 근로시간단축 · 휴가 · 보상",
+                        tasks: [
+                            { title: "근무시간", desc: "근무시간 관리" },
+                            { title: "휴직 및 근로시간단축", desc: "휴직 : 육아휴직, 가족돌봄휴직, 사상휴직 등 / 단축근무 : 임신기, 육아기 등" },
+                            { title: "휴가", desc: "연차, 병가, 출산휴가, 경조휴가, 장기근속 등 휴가관리" },
+                            { title: "보상", desc: "보상 관련 업무" }
+                        ]
+                    },
+                    {
+                        name: "윤지영",
+                        summary: "석식비 · 임원지원",
+                        tasks: [
+                            { title: "석식비", desc: "석식비 지급(매월 22일)" },
+                            { title: "임원지원", desc: "임원 지원 관리" }
+                        ]
+                    },
+                    {
+                        name: "박재은",
+                        summary: "포상",
+                        tasks: [
+                            { title: "포상", desc: "포상 관련 업무" }
+                        ]
+                    },
+                    {
+                        name: "백석환",
+                        summary: "ER",
+                        tasks: [
+                            { title: "ER", desc: "ER 관련 업무" }
+                        ]
+                    },
+                    {
+                        name: "박형윤",
+                        summary: "복지제도·시설/기금",
+                        tasks: [
+                            { title: "복지제도·시설/기금", desc: "복지제도, 사내근로복지기금 운영" }
+                        ]
+                    }
+                ]
+            },
+            {
+                team: "사내고객센터",
+                members: [
+                    {
+                        name: "임세민",
+                        summary: "대부금 · 경조금 · e-book 도서관 · 심리상담",
+                        tasks: [
+                            { title: "대부금", desc: "대부금 신청/상환 문의" },
+                            { title: "경조금", desc: "경조금 지급/신청 관련 문의" },
+                            { title: "e-book 도서관", desc: "e-book 대출 문의" },
+                            { title: "심리상담", desc: "안녕?마음 문의" }
+                        ]
+                    },
+                    {
+                        name: "이성훈",
+                        summary: "휴양시설 · 선택적복리후생비 · 경조물품 · 임신&출산 · 학자금 · 위탁보육",
+                        tasks: [
+                            { title: "휴양시설", desc: "콘도/휴양소 등" },
+                            { title: "선택적복리후생비", desc: "선택적복리후생 베네피아 문의" },
+                            { title: "경조물품", desc: "경조화환/용품 문의" },
+                            { title: "임신&출산 축하선물", desc: "임신/출산 축하 선물 지원" },
+                            { title: "자녀학자금", desc: "자녀학자금" },
+                            { title: "위탁보육지원", desc: "영유아 위탁보육지원" }
+                        ]
+                    },
+                    {
+                        name: "박태훈",
+                        summary: "의료비 · 어학시험지원 · 출장 · Wellness Center · 통신비",
+                        tasks: [
+                            { title: "의료비", desc: "본인, 가족 의료비 신청/ 재검비용 신청,정산" },
+                            { title: "어학시험지원", desc: "TOEIC, TOEIC Speaking, OPIC 등 어학" },
+                            { title: "출장", desc: "국내외 출장 등록/정산 관련 문의" },
+                            { title: "Wellness Center", desc: "안마 이용 문의" },
+                            { title: "통신비", desc: "요금지원, 국제전화, 로밍(출장)" }
+                        ]
+                    },
+                    {
+                        name: "서동석",
+                        summary: "제휴 · 제증명 · Post Center · 법인차량 · ID카드 · 명함",
+                        tasks: [
+                            { title: "제휴", desc: "제휴 문의" },
+                            { title: "제증명", desc: "재직,경력, 갑근세, 근로소득원천징수 증명서" },
+                            { title: "Post Center", desc: "퀵, 택배, 국제우편, 등기" },
+                            { title: "법인차량", desc: "임원 및 업무용 차량 관리" },
+                            { title: "ID카드", desc: "ID카드 발급, 소모품(케이스, 목줄)" },
+                            { title: "명함", desc: "명함제작 문의" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let currentTeam = 'all';
+        let searchQuery = '';
+
+        function getAvatarText(name) {
+            return name.length > 2 ? name.slice(-2) : name;
+        }
+
+        function render() {
+            const container = document.getElementById('contentContainer');
+            container.innerHTML = '';
+
+            hrData.forEach(teamObj => {
+                if (currentTeam !== 'all' && teamObj.team !== currentTeam) return;
+
+                const filteredMembers = teamObj.members.filter(m => {
+                    if (!searchQuery) return true;
+                    const query = searchQuery.toLowerCase();
+                    const nameMatch = m.name.toLowerCase().includes(query);
+                    const summaryMatch = m.summary.toLowerCase().includes(query);
+                    const taskMatch = m.tasks.some(t => t.title.toLowerCase().includes(query) || t.desc.toLowerCase().includes(query));
+                    return nameMatch || summaryMatch || taskMatch;
+                });
+
+                if (filteredMembers.length === 0) return;
+
+                const section = document.createElement('section');
+                section.className = 'team-section';
+
+                const teamTitle = document.createElement('h2');
+                teamTitle.className = 'team-title';
+                teamTitle.textContent = teamObj.team;
+                section.appendChild(teamTitle);
+
+                const cardGrid = document.createElement('div');
+                cardGrid.className = 'card-grid';
+
+                filteredMembers.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = 'member-card';
+                    card.onclick = () => openDrawer(teamObj.team, member);
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="card-header">
+                                <div class="avatar-badge">${getAvatarText(member.name)}</div>
+                                <div class="member-info">
+                                    <h3>${member.name}</h3>
+                                    <span>${teamObj.team}</span>
+                                </div>
+                            </div>
+                            <div class="card-summary">${member.summary}</div>
+                        </div>
+                        <div class="card-footer">
+                            <span>담당 업무 보기</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    `;
+                    cardGrid.appendChild(card);
+                });
+
+                section.appendChild(cardGrid);
+                container.appendChild(section);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 60px 0; color: #888;">검색 결과가 없습니다.</div>`;
+            }
+        }
+
+        function openDrawer(teamName, member) {
+            document.getElementById('drawerAvatar').textContent = getAvatarText(member.name);
+            document.getElementById('drawerTeam').textContent = teamName;
+            document.getElementById('drawerName').textContent = member.name;
+            document.getElementById('drawerKeywords').textContent = member.summary.split(' · ').join(' · ');
+
+            const taskList = document.getElementById('drawerTaskList');
+            taskList.innerHTML = '';
+
+            member.tasks.forEach((task, index) => {
+                const numStr = String(index + 1).padStart(2, '0');
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <div class="task-num">${numStr}</div>
+                    <div class="task-content">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-desc">${task.desc}</div>
+                    </div>
+                `;
+                taskList.appendChild(li);
+            });
+
+            document.getElementById('drawerBackdrop').classList.add('active');
+            document.getElementById('drawer').classList.add('active');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawerBackdrop').classList.remove('active');
+            document.getElementById('drawer').classList.remove('active');
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentTeam = e.target.getAttribute('data-team');
+                render();
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            render();
+        });
+
+        document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
+        document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+
+        render();
+    </script>
+</body>
+</html>
